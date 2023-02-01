@@ -25,7 +25,7 @@ aws_cert        = f"{cert_dir}/rbw_mypi_01.cert.pem"
 aws_key         = f"{cert_dir}/rbw_mypi_01.private.key"
 aws_endpoint    = "a22d4aoxca2zot-ats.iot.us-east-1.amazonaws.com"
 aws_clientid    = f"rbw_mypi_01-{os.path.basename(__file__)}"   #current policy requires client id to be prefixed with 'rbw*'
-aws_topic       = "rbw/air/polution01"                          #current policy requires topic to be 'rbw/*'
+aws_topic       = "rbw/air/pollution01"                         #current policy requires topic to be 'rbw/*'
 ser             = serial.Serial('/dev/ttyUSB0')
 sleep_time      = 30
 
