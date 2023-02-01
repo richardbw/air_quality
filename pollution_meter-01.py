@@ -91,7 +91,7 @@ def main():
             pmtwofive = int.from_bytes(b''.join(data[2:4]), byteorder='little') / 10
             pmten     = int.from_bytes(b''.join(data[4:6]), byteorder='little') / 10
 
-            reading_json = json.dumps({'ts':datetime.utcnow().isoformat(), 'PM2.5':pmtwofive, 'PM10':pmten}, indent=4)
+            reading_json = json.dumps({'ts':datetime.utcnow().isoformat(), 'pmtwofive':pmtwofive, 'pmtenm':pmten}, indent=4)
             log.debug(f"Sending payload: [{reading_json}]")
             mqtt_connection.publish(
                 topic   = aws_topic,
