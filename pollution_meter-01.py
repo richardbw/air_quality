@@ -27,7 +27,7 @@ aws_endpoint    = "a22d4aoxca2zot-ats.iot.us-east-1.amazonaws.com"
 aws_clientid    = f"rbw_mypi_01-{os.path.basename(__file__)}"   #current policy requires client id to be prefixed with 'rbw*'
 aws_topic       = "rbw/air/pollution01"                         #current policy requires topic to be 'rbw/*'
 ser             = serial.Serial('/dev/ttyUSB0')
-sleep_time      = 30
+sleep_time      = 180
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # partially taken from ~/src/python/aws-iot-device-sdk-python-v2/samples/pubsub.py
@@ -91,7 +91,12 @@ def main():
             pmtwofive = int.from_bytes(b''.join(data[2:4]), byteorder='little') / 10
             pmten     = int.from_bytes(b''.join(data[4:6]), byteorder='little') / 10
 
-            reading_json = json.dumps({'ts':datetime.utcnow().isoformat(), 'pmtwofive':pmtwofive, 'pmtenm':pmten}, indent=4)
+            reading_json = json.dumps( {
+                    'ts':           datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), 
+                    'pmtwofive':    pmtwofive, 
+                    'pmten':        pmten
+                }, indent=4)
+
             log.debug(f"Sending payload: [{reading_json}]")
             mqtt_connection.publish(
                 topic   = aws_topic,
