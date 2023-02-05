@@ -19,20 +19,12 @@ Resources:
       CodeUri: ./pub_cw_data/
       Handler: handler.lambda_handler
       Runtime: python3.9
-#      Auth:
-#        ResourcePolicy:
-#          CustomStatements: {
-#              Effect: 'Allow',
-#              Action: 'lambda:InvokeFunction', 
-#              Principal: 'iotanalytics.amazonaws.com'
-#            }
-    Policies:
-          - LambdaInvokePolicy: {}
-          - AWSLambdaExecute
-          - Version: '2012-10-17' 
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                  - s3:GetObjectACL
-                Resource: 'arn:aws:s3:::my-bucket/*'
+      Policies:
+      - CloudWatchPutMetricPolicy: {}
+#      - Version: '2012-10-17' 
+#        Statement:
+#          - Effect: Allow
+#            Action:
+#              - s3:GetObject
+#              - s3:GetObjectACL
+#            Resource: 'arn:aws:s3:::my-bucket/*'

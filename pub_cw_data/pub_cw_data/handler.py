@@ -1,4 +1,10 @@
-
+#!/bin/bash
+#
+#  auth: rbw
+#  date: 20230203
+#  desc:
+#
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import json
 from datetime import datetime
 import boto3
