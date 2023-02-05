@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  air_quality publish CW events lambda
+
+Globals:
+  Function:
+    Timeout: 3
+    MemorySize: 128
+    Tracing: Active
+  Api:
+    TracingEnabled: true
+
+Resources:
+  rbwPublishPollutionData:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: rbw_air_pollution_pub_cw_data
+      CodeUri: ./pub_cw_data/
+      Handler: handler.lambda_handler
+      Runtime: python3.9
+#      Auth:
+#        ResourcePolicy:
+#          CustomStatements: {
+#              Effect: 'Allow',
+#              Action: 'lambda:InvokeFunction', 
+#              Principal: 'iotanalytics.amazonaws.com'
+#            }
+    Policies:
+          - LambdaInvokePolicy: {}
+          - AWSLambdaExecute
+          - Version: '2012-10-17' 
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectACL
+                Resource: 'arn:aws:s3:::my-bucket/*'
