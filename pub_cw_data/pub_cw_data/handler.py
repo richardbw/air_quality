@@ -30,6 +30,7 @@ def lambda_handler(event_list, context):
                 log.debug("RBW> Catching event key: %s" %(key)) 
                 metric_datum = {
                     'MetricName': key,
+                    'Unit': 'μm',
                     'Value': event[key],
                     'Timestamp': ts
 

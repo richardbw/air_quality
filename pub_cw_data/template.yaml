@@ -35,3 +35,28 @@ Resources:
       FunctionName: !Ref rbwPublishPollutionData
       Action: lambda:InvokeFunction
       Principal: iotanalytics.amazonaws.com
+
+  pollutionDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties: 
+      DashboardName: rbwPublishPollutionDashboard
+      DashboardBody: >
+        {
+          "widgets": [
+            {
+                "type": "metric",
+                "x": 0,
+                "y": 0,
+                "width": 24,
+                "height": 12,
+                "properties": {
+                    "view": "timeSeries",
+                    "stacked": false,
+                    "metrics": [ [ "rbw/air/pollution01", "pmten", { "label": "PM10" } ],
+                             [ ".", "pmtwofive", { "yAxis": "right", "label": "PM2.5" } ]
+                    ],
+                    "region": "us-east-1"
+                }
+            }
+          ]
+        }
