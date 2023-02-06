@@ -42,21 +42,29 @@ Resources:
       DashboardName: rbwPublishPollutionDashboard
       DashboardBody: >
         {
-          "widgets": [
-            {
-                "type": "metric",
-                "x": 0,
-                "y": 0,
-                "width": 24,
-                "height": 12,
-                "properties": {
-                    "view": "timeSeries",
-                    "stacked": false,
-                    "metrics": [ [ "rbw/air/pollution01", "pmten", { "label": "PM10" } ],
-                             [ ".", "pmtwofive", { "yAxis": "right", "label": "PM2.5" } ]
-                    ],
-                    "region": "us-east-1"
+            "widgets": [
+                {
+                    "height": 12,
+                    "width": 24,
+                    "y": 0,
+                    "x": 0,
+                    "type": "metric",
+                    "properties": {
+                        "view": "timeSeries",
+                        "stacked": false,
+                        "metrics": [
+                            [ "rbw/air/pollution01", "pmten", { "label": "10μm" } ],
+                            [ ".", "pmtwofive", { "yAxis": "right", "label": "2.5μm" } ]
+                        ],
+                        "region": "us-east-1",
+                        "title": "Particulate matter (PM) concenration",
+                        "period": 300,
+                        "legend": { "position": "right" },
+                        "yAxis": {
+                            "left": { "label": "10μm", "showUnits": false },
+                            "right": { "showUnits": false, "label": "2.5μm" }
+                        }
+                    }
                 }
-            }
-          ]
+            ]
         }
