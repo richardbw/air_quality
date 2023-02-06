@@ -1,6 +1,7 @@
 # air_quality
 Monitor air quality with RasperryPi
 
+![image info](./iot-v0.4-air_quality.png)
 
     $ export AWS_PROFILE=freetos_
     $ unset AWS_SHARED_CREDENTIALS_FILE
