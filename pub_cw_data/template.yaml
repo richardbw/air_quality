@@ -21,10 +21,17 @@ Resources:
       Runtime: python3.9
       Policies:
       - CloudWatchPutMetricPolicy: {}
-#      - Version: '2012-10-17' 
-#        Statement:
-#          - Effect: Allow
-#            Action:
-#              - s3:GetObject
-#              - s3:GetObjectACL
-#            Resource: 'arn:aws:s3:::my-bucket/*'
+
+  rbwPublishPollutionDataLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: rbwPublishPollutionData
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${rbwPublishPollutionData}"
+      RetentionInDays: 7    
+
+  iotInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref rbwPublishPollutionData
+      Action: lambda:InvokeFunction
+      Principal: iotanalytics.amazonaws.com
