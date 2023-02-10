@@ -1,1 +1,2 @@
-sam local invoke -e events/event.json
+sam local invoke -e events/pollution_reading.json
+sam local invoke -e events/temp_humidity_reading.json
