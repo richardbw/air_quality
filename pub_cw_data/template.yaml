@@ -12,39 +12,47 @@ Globals:
     TracingEnabled: true
 
 Resources:
-  rbwPublishPollutionData:
+  
+  rbwPublishPollutionDataFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       FunctionName: rbw_air_pollution_pub_cw_data
       CodeUri: ./pub_cw_data/
       Handler: handler.lambda_handler
       Runtime: python3.9
+      Architectures: 
+      - arm64
       Policies:
-      - CloudWatchPutMetricPolicy: {}
+        - CloudWatchPutMetricPolicy: {}
+      Events:
+        IotRuleAirEvent:
+          Type: IoTRule
+          Properties:
+            Sql: SELECT * FROM 'rbw/air/#' 
 
   rbwPublishPollutionDataLogGroup:
     Type: AWS::Logs::LogGroup
-    DependsOn: rbwPublishPollutionData
+    DependsOn: rbwPublishPollutionDataFunction
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${rbwPublishPollutionData}"
+      LogGroupName: !Sub "/aws/lambda/${rbwPublishPollutionDataFunction}"
       RetentionInDays: 7    
 
   iotInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref rbwPublishPollutionData
+      FunctionName: !Ref rbwPublishPollutionDataFunction
       Action: lambda:InvokeFunction
       Principal: iotanalytics.amazonaws.com
 
   pollutionDashboard:
     Type: AWS::CloudWatch::Dashboard
     Properties: 
-      DashboardName: rbwPublishPollutionDashboard
+      DashboardName: rbw Air Quality Dashboard
       DashboardBody: >
         {
             "widgets": [
                 {
-                    "height": 12,
+                    "height": 9,
                     "width": 24,
                     "y": 0,
                     "x": 0,
@@ -57,12 +65,48 @@ Resources:
                             [ ".", "pmtwofive", { "yAxis": "right", "label": "2.5μm" } ]
                         ],
                         "region": "us-east-1",
-                        "title": "Particulate matter (PM) concenration",
+                        "title": "Particulate matter (PM) concentration (μg/m³))",
                         "period": 300,
-                        "legend": { "position": "right" },
+                        "legend": {
+                            "position": "right"
+                        },
                         "yAxis": {
-                            "left": { "label": "10μm", "showUnits": false },
-                            "right": { "showUnits": false, "label": "2.5μm" }
+                            "left": {
+                                "label": "10μm",
+                                "showUnits": false
+                            },
+                            "right": {
+                                "showUnits": false,
+                                "label": "2.5μm"
+                            }
+                        }
+                    }
+                },
+                {
+                    "type": "metric",
+                    "x": 0,
+                    "y": 9,
+                    "width": 24,
+                    "height": 7,
+                    "properties": {
+                        "metrics": [
+                            [ "rbw/air/temphumid01", "humidity", { "yAxis": "right" } ],
+                            [ ".", "temp", { "yAxis": "left" } ]
+                        ],
+                        "view": "timeSeries",
+                        "stacked": false,
+                        "region": "us-east-1",
+                        "stat": "Average",
+                        "period": 300,
+                        "yAxis": {
+                            "left": {
+                                "showUnits": false,
+                                "label": "Temp (C)"
+                            },
+                            "right": {
+                                "showUnits": false,
+                                "label": "Humidity (%)"
+                            }
                         }
                     }
                 }
