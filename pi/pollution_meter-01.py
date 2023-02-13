@@ -19,11 +19,14 @@ log = logging.getLogger(__name__)               # https://coloredlogs.readthedoc
 coloredlogs.install(level='DEBUG', logger=log)  #
 
 cert_dir        = f"{os.path.expanduser('~')}/src/python/rbw_mypi_01-certs"
+if not 'AWS_IOT_ENDPOINT' in os.environ: 
+    log.error(f"No environment variable set for AWS_IOT_ENDPOINT")
+    sys.exit(24)
 
 aws_ca_file     = f"{cert_dir}/root-CA.crt"
 aws_cert        = f"{cert_dir}/rbw_mypi_01.cert.pem"
 aws_key         = f"{cert_dir}/rbw_mypi_01.private.key"
-aws_endpoint    = "a22d4aoxca2zot-ats.iot.us-east-1.amazonaws.com"
+aws_endpoint    = os.environ['AWS_IOT_ENDPOINT']
 aws_clientid    = f"rbw_mypi_01-{os.path.basename(__file__)}"   #current policy requires client id to be prefixed with 'rbw*'
 aws_topic       = "rbw/air/pollution01"                         #current policy requires topic to be 'rbw/*'
 ser             = serial.Serial('/dev/ttyUSB0')

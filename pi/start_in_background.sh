@@ -10,6 +10,8 @@ PYSCRIPT="$BASE_DIR/pollution_meter-01.py"
 
 OUTPUT_FILE="$BASE_DIR/log/nohup.out"
 
+[ -z "$AWS_IOT_ENDPOINT" ] && echo "ERROR: envar not set: AWS_IOT_ENDPOINT" && exit 13
+
 echo "Running $PYSCRIPT in background"
 echo "Directing stdout to $OUTPUT_FILE"
 echo "--------------------------------"
