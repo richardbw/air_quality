@@ -47,7 +47,7 @@ Resources:
   pollutionDashboard:
     Type: AWS::CloudWatch::Dashboard
     Properties: 
-      DashboardName: rbw Air Quality Dashboard
+      DashboardName: rbw-Air_Quality_Dashboard
       DashboardBody: >
         {
             "widgets": [
