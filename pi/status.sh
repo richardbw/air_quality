@@ -13,7 +13,12 @@ if [ -z "$PID" ] ; then
     echo "Process not found"
 else    
     echo "Process found: $PID"
+    if [ "$1" == "kill" ] ; then
+        echo "Killing $PID..."
+        kill "$PID"
+    fi
 fi
+
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 echo "Done."

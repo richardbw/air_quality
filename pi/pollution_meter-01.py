@@ -18,6 +18,9 @@ from awsiot import mqtt_connection_builder
 log = logging.getLogger(__name__)               # https://coloredlogs.readthedocs.io/en/
 coloredlogs.install(level='DEBUG', logger=log)  #
 
+PUBLISH_TO_AWS  = True 
+sleep_time      = 180
+
 cert_dir        = f"{os.path.expanduser('~')}/src/python/rbw_mypi_01-certs"
 if not 'AWS_IOT_ENDPOINT' in os.environ: 
     log.error(f"No environment variable set for AWS_IOT_ENDPOINT")
@@ -30,7 +33,6 @@ aws_endpoint    = os.environ['AWS_IOT_ENDPOINT']
 aws_clientid    = f"rbw_mypi_01-{os.path.basename(__file__)}"   #current policy requires client id to be prefixed with 'rbw*'
 aws_topic       = "rbw/air/pollution01"                         #current policy requires topic to be 'rbw/*'
 ser             = serial.Serial('/dev/ttyUSB0')
-sleep_time      = 180
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # partially taken from ~/src/python/aws-iot-device-sdk-python-v2/samples/pubsub.py
@@ -82,7 +84,8 @@ def main():
     log.info (f"----------------------------------------")
 
     try:
-        mqtt_connection = connect_mqtt()
+        if PUBLISH_TO_AWS:
+            mqtt_connection = connect_mqtt()
 
         log.info("Starting to read  (^C to stop)...")
         while True:
@@ -99,13 +102,17 @@ def main():
                     'pmtwofive':    pmtwofive, 
                     'pmten':        pmten
                 }, indent=4)
+        
+            if PUBLISH_TO_AWS:
+                log.debug(f"Sending payload: [{reading_json}]")
+                mqtt_connection.publish(
+                    topic   = aws_topic,
+                    payload = reading_json,
+                    qos     = mqtt.QoS.AT_LEAST_ONCE
+                )
+            else:
+                log.debug(f"Serial reading: [{reading_json}]")
 
-            log.debug(f"Sending payload: [{reading_json}]")
-            mqtt_connection.publish(
-                topic   = aws_topic,
-                payload = reading_json,
-                qos     = mqtt.QoS.AT_LEAST_ONCE
-            )
             sleep(sleep_time)
 
     except KeyboardInterrupt:

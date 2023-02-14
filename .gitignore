@@ -1,6 +1,6 @@
 ref
 bak
-log/*
+log/
 .aws-sam/
 samconfig.toml
 # Byte-compiled / optimized / DLL files
