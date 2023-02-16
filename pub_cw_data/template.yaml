@@ -65,7 +65,7 @@ Resources:
                             [ ".", "pmtwofive", { "yAxis": "right", "label": "2.5μm" } ]
                         ],
                         "region": "us-east-1",
-                        "title": "Particulate matter (PM) concentration (μg/m³))",
+                        "title": "Particulate matter (PM) concentration (μg/m³)",
                         "period": 300,
                         "legend": {
                             "position": "right"

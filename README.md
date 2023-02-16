@@ -1,18 +1,15 @@
-# air_quality
+# RBW IoT Air Quality Monitor
 Monitor air quality with RasperryPi
 
+The Air Quality Standards Regulations 2010 require that concentrations of PM in the UK must not exceed:
+* An annual average of 40 µg/m3 for PM10;
+* A 24-hour average of 50 µg/m3 more than 35 times in a single year for PM10;
+* An annual average of 20 µg/m3 for PM2.5.
+
+(Ref: Defra)
+
+### Solution Implementation:
 ![image info](./iot-v0.4-air_quality.png)
-
-    $ export AWS_PROFILE=freetos_
-    $ unset AWS_SHARED_CREDENTIALS_FILE
-    $ unset AWS_REGION
-    $ aws iotanalytics list-channels
-    $ aws iotanalytics describe-channel --channel-name rbw_air_pollution01_channel
-
-    $ aws iotanalytics list-pipelines
-    $ aws iotanalytics create-pipeline   --cli-input-json file://mypipe.json
-    $ aws iotanalytics describe-pipeline --pipeline-name rbw_air_pollution01_pipeline
-    $ aws iam create-role --role-name rbw_air_pollution_assume --assume-role-policy-document mytrust_policy.json
     
   ---
 

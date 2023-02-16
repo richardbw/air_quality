@@ -7,8 +7,7 @@
 #   Policy: https://us-east-1.console.aws.amazon.com/iot/home?region=us-east-1#/policy/rbw_mypi_01-Policy
 #   See also: https://aws.amazon.com/premiumsupport/knowledge-center/iot-core-publish-mqtt-messages-python/
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import os,sys,threading,json
-import serial
+import os,sys,json,argparse
 import coloredlogs, logging                     
 from datetime import datetime
 from time import sleep
@@ -18,21 +17,39 @@ from awsiot import mqtt_connection_builder
 log = logging.getLogger(__name__)               # https://coloredlogs.readthedocs.io/en/
 coloredlogs.install(level='DEBUG', logger=log)  #
 
-PUBLISH_TO_AWS  = True 
-sleep_time      = 180
-
-cert_dir        = f"{os.path.expanduser('~')}/src/python/rbw_mypi_01-certs"
-if not 'AWS_IOT_ENDPOINT' in os.environ: 
-    log.error(f"No environment variable set for AWS_IOT_ENDPOINT")
-    sys.exit(24)
-
-aws_ca_file     = f"{cert_dir}/root-CA.crt"
-aws_cert        = f"{cert_dir}/rbw_mypi_01.cert.pem"
-aws_key         = f"{cert_dir}/rbw_mypi_01.private.key"
-aws_endpoint    = os.environ['AWS_IOT_ENDPOINT']
-aws_clientid    = f"rbw_mypi_01-{os.path.basename(__file__)}"   #current policy requires client id to be prefixed with 'rbw*'
 aws_topic       = "rbw/air/pollution01"                         #current policy requires topic to be 'rbw/*'
-ser             = serial.Serial('/dev/ttyUSB0')
+aws_clientid    = f"rbw_mypi_01-{os.path.basename(__file__)}"   #current policy requires client id to be prefixed with 'rbw*'
+CERT_DIR        = f"{os.path.expanduser('~')}/src/python/rbw_mypi_01-certs"
+SERIAL_PORT     = '/dev/ttyUSB0'
+PUBLISH_TO_AWS  = True 
+USE_SERIAL_PORT = True 
+SLEEP_TIME      = 180
+
+
+
+def cmd_args(): #{{{
+    global USE_SERIAL_PORT, PUBLISH_TO_AWS, SLEEP_TIME, CERT_DIR
+    parser = argparse.ArgumentParser(
+        prog        = 'Particulate Stat Monitor',  
+        description = 'Publish particulate stats to MQTT/AWS',
+        epilog      = '---'
+    )
+    parser.add_argument('-s',   dest='use_serial_port', help='Switch OFF serial port - for non-Pi execution', action=argparse.BooleanOptionalAction )
+    parser.add_argument('-p',   dest='publish_to_aws',  help='Switch OFF publishing to AWS',                  action=argparse.BooleanOptionalAction )
+    parser.add_argument('-t',   dest='sleep_time',      help=f'Set polling/sleep time; default is {SLEEP_TIME}s', default=SLEEP_TIME)
+    parser.add_argument('-c',   dest='cert_dir',        help=f'Override certificate directory; default is {CERT_DIR}s', default=CERT_DIR)
+    args = parser.parse_args()
+
+    USE_SERIAL_PORT = not args.use_serial_port
+    PUBLISH_TO_AWS  = not args.publish_to_aws
+    SLEEP_TIME      = args.sleep_time
+    CERT_DIR        = args.cert_dir
+
+    if PUBLISH_TO_AWS and not 'AWS_IOT_ENDPOINT' in os.environ: 
+        log.error(f"No environment variable set for AWS_IOT_ENDPOINT")
+        sys.exit(24)
+#}}}
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # partially taken from ~/src/python/aws-iot-device-sdk-python-v2/samples/pubsub.py
@@ -48,6 +65,23 @@ def on_connection_resumed(connection, return_code, session_present, **kwargs):
 
 # https://aws.amazon.com/premiumsupport/knowledge-center/iot-core-publish-mqtt-messages-python/
 def connect_mqtt(): #{{{
+    aws_ca_file     = f"{cert_dir}/root-CA.crt"
+    aws_cert        = f"{cert_dir}/rbw_mypi_01.cert.pem"
+    aws_key         = f"{cert_dir}/rbw_mypi_01.private.key"
+    aws_endpoint    = os.environ['AWS_IOT_ENDPOINT']
+    log.debug (f"----------------------------------------")
+    log.debug(f"CA file                  : {aws_ca_file}")
+    log.debug(f"Cert file                : {aws_cert}")
+    log.debug(f"Key file                 : {aws_key}")
+    log.debug(f"ClientID                 : {aws_clientid}")
+    log.debug(f"AWS end-point            : {aws_endpoint}")
+    log.debug(f"IoT topic                : {aws_topic}")
+    log.info (f"----------------------------------------")
+
+    if not os.path.isfile(aws_cert):
+        log.error(f"File not found: {aws_cert}")
+        sys.exit(81)
+
     event_loop_group = io.EventLoopGroup(1)
     client_bootstrap = io.ClientBootstrap(event_loop_group, io.DefaultHostResolver(event_loop_group))
     mqtt_connection = mqtt_connection_builder.mtls_from_path(
@@ -70,28 +104,29 @@ def connect_mqtt(): #{{{
 #}}}
 
 
+
+
+
+
 def main():
+    cmd_args()
+
+    if USE_SERIAL_PORT:
+        import serial
+        ser = serial.Serial(SERIAL_PORT)
+        log.debug(f"Reading from serial input: {ser}")
+
     log.info (f"Starting "+sys.argv[0])
-    log.debug (f"----------------------------------------")
-    log.debug(f"CA file                  : {aws_ca_file}")
-    log.debug(f"Cert file                : {aws_cert}")
-    log.debug(f"Key file                 : {aws_key}")
-    log.debug(f"ClientID                 : {aws_clientid}")
-    log.debug(f"AWS end-point            : {aws_endpoint}")
-    log.debug(f"IoT topic                : {aws_topic}")
-    log.debug(f"Every                    : {sleep_time}s")
-    log.debug(f"Reading from serial input: {ser}")
-    log.info (f"----------------------------------------")
 
     try:
         if PUBLISH_TO_AWS:
             mqtt_connection = connect_mqtt()
 
-        log.info("Starting to read  (^C to stop)...")
+        log.info(f"Starting to read every {SLEEP_TIME}s (^C to stop)...")
         while True:
             data = []
             for idx in range(0, 10):
-                datum = ser.read()
+                datum = ser.read() if USE_SERIAL_PORT else int(0).to_bytes(1, byteorder='little')
                 data.append(datum)
 
             pmtwofive = int.from_bytes(b''.join(data[2:4]), byteorder='little') / 10
@@ -113,7 +148,7 @@ def main():
             else:
                 log.debug(f"Serial reading: [{reading_json}]")
 
-            sleep(sleep_time)
+            sleep(SLEEP_TIME)
 
     except KeyboardInterrupt:
         log.warning("Caught ^C, and exiting")
