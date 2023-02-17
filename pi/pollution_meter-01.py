@@ -42,7 +42,7 @@ def cmd_args(): #{{{
 
     USE_SERIAL_PORT = not args.use_serial_port
     PUBLISH_TO_AWS  = not args.publish_to_aws
-    SLEEP_TIME      = args.sleep_time
+    SLEEP_TIME      = int(args.sleep_time)
     CERT_DIR        = args.cert_dir
 
     if PUBLISH_TO_AWS and not 'AWS_IOT_ENDPOINT' in os.environ: 
