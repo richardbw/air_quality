@@ -11,6 +11,7 @@ import os,sys,json,argparse
 import coloredlogs, logging                     
 from datetime import datetime
 from time import sleep
+from sds011 import SDS011
 from awscrt import mqtt,io
 from awsiot import mqtt_connection_builder
 
@@ -22,25 +23,25 @@ aws_clientid    = f"rbw_mypi_01-{os.path.basename(__file__)}"   #current policy 
 CERT_DIR        = f"{os.path.expanduser('~')}/src/python/rbw_mypi_01-certs"
 SERIAL_PORT     = '/dev/ttyUSB0'
 PUBLISH_TO_AWS  = True 
-USE_SERIAL_PORT = True 
+USE_SDS011 = True 
 SLEEP_TIME      = 180
 
 
 
 def cmd_args(): #{{{
-    global USE_SERIAL_PORT, PUBLISH_TO_AWS, SLEEP_TIME, CERT_DIR
+    global USE_SDS011, PUBLISH_TO_AWS, SLEEP_TIME, CERT_DIR
     parser = argparse.ArgumentParser(
         prog        = 'Particulate Stat Monitor',  
         description = 'Publish particulate stats to MQTT/AWS',
         epilog      = '---'
     )
-    parser.add_argument('-s',   dest='use_serial_port', help='Switch OFF serial port - for non-Pi execution', action=argparse.BooleanOptionalAction )
-    parser.add_argument('-p',   dest='publish_to_aws',  help='Switch OFF publishing to AWS',                  action=argparse.BooleanOptionalAction )
+    parser.add_argument('-s',   dest='use_sds011',      help='Switch OFF serial port - for non-Pi execution', action=argparse.BooleanOptionalAction )
+    parser.add_argument('-a',   dest='publish_to_aws',  help='Switch OFF publishing to AWS',                  action=argparse.BooleanOptionalAction )
     parser.add_argument('-t',   dest='sleep_time',      help=f'Set polling/sleep time; default is {SLEEP_TIME}s', default=SLEEP_TIME)
     parser.add_argument('-c',   dest='cert_dir',        help=f'Override certificate directory; default is {CERT_DIR}s', default=CERT_DIR)
     args = parser.parse_args()
 
-    USE_SERIAL_PORT = not args.use_serial_port
+    USE_SDS011      = not args.use_sds011
     PUBLISH_TO_AWS  = not args.publish_to_aws
     SLEEP_TIME      = int(args.sleep_time)
     CERT_DIR        = args.cert_dir
@@ -111,10 +112,9 @@ def connect_mqtt(): #{{{
 def main():
     cmd_args()
 
-    if USE_SERIAL_PORT:
-        import serial
-        ser = serial.Serial(SERIAL_PORT)
-        log.debug(f"Reading from serial input: {ser}")
+    if USE_SDS011:
+        sds = SDS011(port=SERIAL_PORT, rate=5)
+        log.debug(f"Reading from SDS:\n{sds}")
 
     log.info (f"Starting "+sys.argv[0])
 
@@ -124,18 +124,12 @@ def main():
 
         log.info(f"Starting to read every {SLEEP_TIME}s (^C to stop)...")
         while True:
-            data = []
-            for idx in range(0, 10):
-                datum = ser.read() if USE_SERIAL_PORT else int(0).to_bytes(1, byteorder='little')
-                data.append(datum)
-
-            pmtwofive = int.from_bytes(b''.join(data[2:4]), byteorder='little') / 10
-            pmten     = int.from_bytes(b''.join(data[4:6]), byteorder='little') / 10
+            m = sds.read_measurement() if USE_SDS011 else {'timestamp': datetime.utcnow(), 'pm2.5':0, 'pm10':0}
 
             reading_json = json.dumps( {
-                    'ts':           datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), 
-                    'pmtwofive':    pmtwofive, 
-                    'pmten':        pmten
+                    'ts':           m['timestamp'].strftime('%Y-%m-%d %H:%M:%S'),
+                    'pmtwofive':    m['pm2.5'], 
+                    'pmten':        m['pm10']
                 }, indent=4)
         
             if PUBLISH_TO_AWS:

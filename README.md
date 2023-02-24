@@ -15,6 +15,7 @@ The Air Quality Standards Regulations 2010 require that concentrations of PM in 
 
 # Links
 * [Monitor air quality with a Raspberry Pi](https://www.raspberrypi.com/news/monitor-air-quality-with-a-raspberry-pi/)
+* [Python SDS011 module](https://pypi.org/project/sds011/)
 * [Defra: Concentrations of particulate matter (PM10 and PM2.5)](https://www.gov.uk/government/statistics/air-quality-statistics/concentrations-of-particulate-matter-pm10-and-pm25)
 * [Asthma &amp; Lung UK](https://www.blf.org.uk/taskforce/data-tracker/air-quality/pm25)
 
