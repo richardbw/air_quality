@@ -127,7 +127,8 @@ def main():
             m = sds.read_measurement() if USE_SDS011 else {'timestamp': datetime.utcnow(), 'pm2.5':0, 'pm10':0}
 
             reading_json = json.dumps( {
-                    'ts':           m['timestamp'].strftime('%Y-%m-%d %H:%M:%S'),
+                    'ts':           datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+                    'timestamp':    m['timestamp'].strftime('%Y-%m-%d %H:%M:%S'),
                     'pmtwofive':    m['pm2.5'], 
                     'pmten':        m['pm10']
                 }, indent=4)
