@@ -66,9 +66,9 @@ def on_connection_resumed(connection, return_code, session_present, **kwargs):
 
 # https://aws.amazon.com/premiumsupport/knowledge-center/iot-core-publish-mqtt-messages-python/
 def connect_mqtt(): #{{{
-    aws_ca_file     = f"{cert_dir}/root-CA.crt"
-    aws_cert        = f"{cert_dir}/rbw_mypi_01.cert.pem"
-    aws_key         = f"{cert_dir}/rbw_mypi_01.private.key"
+    aws_ca_file     = f"{CERT_DIR}/root-CA.crt"
+    aws_cert        = f"{CERT_DIR}/rbw_mypi_01.cert.pem"
+    aws_key         = f"{CERT_DIR}/rbw_mypi_01.private.key"
     aws_endpoint    = os.environ['AWS_IOT_ENDPOINT']
     log.debug (f"----------------------------------------")
     log.debug(f"CA file                  : {aws_ca_file}")
