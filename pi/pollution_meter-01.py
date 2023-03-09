@@ -66,9 +66,9 @@ def on_connection_resumed(connection, return_code, session_present, **kwargs):
 
 # https://aws.amazon.com/premiumsupport/knowledge-center/iot-core-publish-mqtt-messages-python/
 def connect_mqtt(): #{{{
-    aws_ca_file     = f"{cert_dir}/root-CA.crt"
-    aws_cert        = f"{cert_dir}/rbw_mypi_01.cert.pem"
-    aws_key         = f"{cert_dir}/rbw_mypi_01.private.key"
+    aws_ca_file     = f"{CERT_DIR}/root-CA.crt"
+    aws_cert        = f"{CERT_DIR}/rbw_mypi_01.cert.pem"
+    aws_key         = f"{CERT_DIR}/rbw_mypi_01.private.key"
     aws_endpoint    = os.environ['AWS_IOT_ENDPOINT']
     log.debug (f"----------------------------------------")
     log.debug(f"CA file                  : {aws_ca_file}")
@@ -127,7 +127,8 @@ def main():
             m = sds.read_measurement() if USE_SDS011 else {'timestamp': datetime.utcnow(), 'pm2.5':0, 'pm10':0}
 
             reading_json = json.dumps( {
-                    'ts':           m['timestamp'].strftime('%Y-%m-%d %H:%M:%S'),
+                    'ts':           datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+                    'timestamp':    m['timestamp'].strftime('%Y-%m-%d %H:%M:%S'),
                     'pmtwofive':    m['pm2.5'], 
                     'pmten':        m['pm10']
                 }, indent=4)
